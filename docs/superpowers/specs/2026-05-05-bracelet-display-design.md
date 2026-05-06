@@ -14,11 +14,11 @@ A parametric bracelet display stand designed for product photography, optimized 
 ### Functional Requirements
 - **Primary Use:** Display bracelets for product photography
 - **Stability:** Secure tabletop placement during photography setup
-- **Flexibility:** Accommodate bracelet sizes from 15-23cm circumference
+- **Flexibility:** Accommodate bracelet sizes from 8-9 inches (20.3-22.9 cm length)
 - **Professional Aesthetics:** Clean, elegant appearance suitable for marketing
 
 ### Manufacturing Requirements
-- **Printer:** Creality K2 Plus (120mm x 140mm x 120mm build volume)
+- **Printer:** Creality K2 Plus (350mm x 350mm x 350mm build volume)
 - **Material:** PLA/ASA, optimized for Silk filaments (Gold/Copper)
 - **Support-Free:** All overhangs under 45° for clean printing
 - **Wall Thickness:** 2.5mm minimum for strength and premium feel
@@ -35,22 +35,22 @@ A parametric bracelet display stand designed for product photography, optimized 
 ### Component Breakdown
 
 **1. Base Platform**
-- **Geometry:** Rounded rectangular platform (80mm x 60mm x 18mm)
-- **Purpose:** Provides stability and houses weight distribution
+- **Geometry:** Rounded rectangular platform (120mm x 100mm x 25mm)
+- **Purpose:** Provides stability for taller display and houses weight distribution
 - **Features:** Chamfered edges (3mm) for premium appearance
 - **Constraints:** Platform center anchored to origin (0,0,0)
 
 **2. Display Arm**
-- **Geometry:** Tapered curved arm extending from base at 50° angle
-- **Profile:** Wider at base (15mm), narrower at top (8mm) for visual elegance
-- **Height:** 105mm total display height (within 120mm constraint)
+- **Geometry:** Elegant curved arm extending from base at 15° angle (more vertical for hanging display)
+- **Profile:** Wider at base (20mm), maintaining width (18mm) for strength with taller design
+- **Height:** 200mm total display height (ample room for 8-9" bracelet to hang)
 - **Features:** 2mm edge chamfers for smooth finish
 
 **3. Bracelet Rest**
-- **Geometry:** Cylindrical rest at arm terminus
-- **Diameter:** 28mm (accommodates 20-35mm range)
+- **Geometry:** Cylindrical post for hanging bracelets
+- **Diameter:** 25mm (optimal for 8-9 inch bracelet draping without stretching)
 - **Integration:** Seamlessly blended with arm geometry
-- **Features:** 1.5mm comfort chamfer on contact edges
+- **Features:** 1.5mm comfort chamfer to prevent bracelet snagging
 
 ### Parametric System Design
 
@@ -58,17 +58,16 @@ A parametric bracelet display stand designed for product photography, optimized 
 
 ```
 BaseGeometry:
-├── BaseWidth: 80mm (70-90mm range)
-├── BaseDepth: 60mm (50-70mm range)
-├── BaseHeight: 18mm (15-25mm range)
+├── BaseWidth: 120mm (100-150mm range)
+├── BaseDepth: 100mm (80-120mm range)
+├── BaseHeight: 25mm (20-35mm range)
 └── WallThickness: 2.5mm (2-4mm range)
 
 DisplayGeometry:
-├── DisplayHeight: 105mm (90-120mm range)
-├── DisplayAngle: 50° (40-60° range)
-├── ArmWidthBase: 15mm (12-18mm range)
-├── ArmWidthTop: 8mm (6-10mm range)
-└── BraceletRestDiameter: 28mm (20-35mm range)
+├── DisplayHeight: 200mm (180-250mm range)
+├── DisplayAngle: 15° (10-25° range, more vertical for hanging)
+├── ArmWidth: 20mm (15-25mm range, consistent for strength)
+└── BraceletRestDiameter: 25mm (20-35mm range, optimized for 8-9" bracelets)
 
 Aesthetics:
 ├── BaseChamfer: 3mm (2-4mm range)
@@ -121,7 +120,7 @@ Aesthetics:
 ### Print Validation
 - Maximum overhang angle ≤ 45° for support-free printing
 - Wall thickness ≥ 2mm everywhere for structural integrity
-- Overall height ≤ 120mm to fit K2 Plus build volume
+- Overall dimensions fit within 350×350×350mm K2 Plus build volume
 - Model centered at (0,0,0) for proper bed placement
 
 ### Functional Validation
