@@ -1,0 +1,31 @@
+# FreeCAD Files
+*.FCStd1
+*.FCStd.lock
+*.FCBak
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# STL working files
+*_working.stl
+*_test.stl
+
+# Renders (optional, can be versioned)
+# renders/*.png
