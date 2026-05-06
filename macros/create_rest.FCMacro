@@ -1,0 +1,67 @@
+import FreeCAD
+import FreeCADGui
+import Part
+import Sketcher
+import math
+
+# Get display document
+display_doc = FreeCAD.getDocument("BraceletDisplay")
+if not display_doc:
+    FreeCAD.Console.PrintError("BraceletDisplay document not found\n")
+    exit()
+
+# Get body
+body = display_doc.getObject("DisplayBody")
+
+# Calculate rest position from parameters
+# Note: In real implementation, these would be read from VarSet
+arm_height = 200.0  # DisplayHeight
+arm_angle_deg = 15.0  # DisplayAngle
+base_height = 12.5   # Half BaseHeight
+
+# Calculate endpoint
+arm_angle_rad = math.radians(arm_angle_deg)
+end_x = arm_height * math.tan(arm_angle_rad)
+end_z = arm_height + base_height
+
+# Create rest sketch if not exists
+rest_sketch = display_doc.getObject("RestSketch")
+if not rest_sketch:
+    rest_sketch = display_doc.addObject("Sketcher::SketchObject", "RestSketch")
+
+    # Position at arm endpoint, perpendicular to YZ plane
+    rest_sketch.Placement = FreeCAD.Placement(
+        FreeCAD.Vector(end_x, 0, end_z),
+        FreeCAD.Rotation(FreeCAD.Vector(0, 1, 0), 90))
+
+    # Add circle for rest
+    rest_sketch.addGeometry(Part.Circle(FreeCAD.Vector(0, 0, 0),
+                                       FreeCAD.Vector(0, 0, 1), 12.5), False)
+
+    # Center the circle
+    rest_sketch.addConstraint(Sketcher.Constraint('Coincident', 0, 3, -1, 1))
+
+    # Add diameter constraint
+    diameter_constraint = rest_sketch.addConstraint(
+        Sketcher.Constraint('Diameter', 0, 25.0))
+
+    # Bind to parameter
+    rest_sketch.setExpression(f'Constraints[{diameter_constraint}]',
+                             '<<Params>>#VarSet.BraceletRestDiameter')
+
+# Create revolution if not exists
+rest_revolve = display_doc.getObject("RestRevolve")
+if not rest_revolve:
+    rest_revolve = display_doc.addObject("PartDesign::Revolution", "RestRevolve")
+    rest_revolve.Profile = rest_sketch
+    rest_revolve.ReferenceAxis = (rest_sketch, ['H_Axis'])
+    rest_revolve.Angle = 360.0
+
+# Add to body
+if rest_sketch not in body.Group:
+    body.addObject(rest_sketch)
+if rest_revolve not in body.Group:
+    body.addObject(rest_revolve)
+
+display_doc.recompute()
+FreeCAD.Console.PrintMessage("Bracelet rest created with parametric constraints\n")
