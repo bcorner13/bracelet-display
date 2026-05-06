@@ -1,0 +1,32 @@
+import FreeCAD
+import FreeCADGui
+
+# Get display document
+display_doc = FreeCAD.getDocument("BraceletDisplay")
+body = display_doc.getObject("DisplayBody")
+
+# Apply base chamfers
+base_chamfer = display_doc.addObject("PartDesign::Chamfer", "BaseChamfer")
+base_chamfer.Base = display_doc.getObject("Pad")  # Base pad
+base_chamfer.Size = 3.0
+base_chamfer.setExpression('Size', '<<Params>>#VarSet.BaseChamfer')
+
+# Apply arm chamfers
+arm_chamfer = display_doc.addObject("PartDesign::Chamfer", "ArmChamfer")
+arm_chamfer.Base = display_doc.getObject("ArmPad")
+arm_chamfer.Size = 2.0
+arm_chamfer.setExpression('Size', '<<Params>>#VarSet.ArmChamfer')
+
+# Apply rest chamfers
+rest_chamfer = display_doc.addObject("PartDesign::Chamfer", "RestChamfer")
+rest_chamfer.Base = display_doc.getObject("RestRevolve")
+rest_chamfer.Size = 1.5
+rest_chamfer.setExpression('Size', '<<Params>>#VarSet.RestChamfer')
+
+# Add to body
+body.addObject(base_chamfer)
+body.addObject(arm_chamfer)
+body.addObject(rest_chamfer)
+
+display_doc.recompute()
+FreeCAD.Console.PrintMessage("Chamfers applied with parametric sizing\n")

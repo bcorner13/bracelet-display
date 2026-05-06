@@ -1,0 +1,45 @@
+import FreeCAD
+import FreeCADGui
+import os
+
+# Get display document
+display_doc = FreeCAD.getDocument("BraceletDisplay")
+if not display_doc:
+    FreeCAD.Console.PrintError("BraceletDisplay document not found\n")
+    exit()
+
+# Get final body
+body = display_doc.getObject("DisplayBody")
+if not body:
+    FreeCAD.Console.PrintError("DisplayBody not found\n")
+    exit()
+
+# Recompute to ensure latest geometry
+display_doc.recompute()
+
+# Check if model is valid
+if not body.Shape.isValid():
+    FreeCAD.Console.PrintError("Model geometry is invalid\n")
+    exit()
+
+# Export STL
+output_path = "./stls/bracelet_display_v1.stl"
+os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+# Export with proper orientation (centered at origin)
+body.Shape.exportStl(output_path)
+
+FreeCAD.Console.PrintMessage(f"Model exported to {output_path}\n")
+
+# Log export details
+os.makedirs("./logs", exist_ok=True)
+with open("./logs/export.log", "w") as f:
+    bbox = body.Shape.BoundBox
+    f.write(f"Export Date: {FreeCAD.Version()[3]}\n")
+    f.write(f"Model: BraceletDisplay v1\n")
+    f.write(f"Dimensions: {bbox.XLength:.1f} x {bbox.YLength:.1f} x {bbox.ZLength:.1f} mm\n")
+    f.write(f"Volume: {body.Shape.Volume:.1f} mm³\n")
+    f.write(f"Surface Area: {body.Shape.Area:.1f} mm²\n")
+    f.write(f"Output: {output_path}\n")
+
+print("Export complete with validation log")
