@@ -1,0 +1,88 @@
+import FreeCAD
+import FreeCADGui
+import Sketcher
+import Part
+
+# Create or get main document
+display_doc = None
+for doc in FreeCAD.listDocuments().values():
+    if doc.Label == "BraceletDisplay":
+        display_doc = doc
+        break
+
+if not display_doc:
+    display_doc = FreeCAD.newDocument("BraceletDisplay")
+
+# Create or get body
+body = None
+for obj in display_doc.Objects:
+    if obj.TypeId == "PartDesign::Body" and obj.Label == "DisplayBody":
+        body = obj
+        break
+
+if not body:
+    body = display_doc.addObject("PartDesign::Body", "DisplayBody")
+
+# Create base sketch if not exists
+base_sketch = None
+for obj in display_doc.Objects:
+    if obj.TypeId == "Sketcher::SketchObject" and obj.Label == "BaseSketch":
+        base_sketch = obj
+        break
+
+if not base_sketch:
+    base_sketch = display_doc.addObject("Sketcher::SketchObject", "BaseSketch")
+    base_sketch.AttachmentSupport = [(display_doc.XY_Plane, '')]
+    base_sketch.MapMode = 'FlatFace'
+
+    # Add rectangle geometry
+    base_sketch.addGeometry(Part.LineSegment(
+        FreeCAD.Vector(-60, -50, 0), FreeCAD.Vector(60, -50, 0)), False)
+    base_sketch.addGeometry(Part.LineSegment(
+        FreeCAD.Vector(60, -50, 0), FreeCAD.Vector(60, 50, 0)), False)
+    base_sketch.addGeometry(Part.LineSegment(
+        FreeCAD.Vector(60, 50, 0), FreeCAD.Vector(-60, 50, 0)), False)
+    base_sketch.addGeometry(Part.LineSegment(
+        FreeCAD.Vector(-60, 50, 0), FreeCAD.Vector(-60, -50, 0)), False)
+
+    # Add constraints
+    base_sketch.addConstraint(Sketcher.Constraint('Coincident', 0, 2, 1, 1))
+    base_sketch.addConstraint(Sketcher.Constraint('Coincident', 1, 2, 2, 1))
+    base_sketch.addConstraint(Sketcher.Constraint('Coincident', 2, 2, 3, 1))
+    base_sketch.addConstraint(Sketcher.Constraint('Coincident', 3, 2, 0, 1))
+
+    # Add dimensional constraints
+    width_constraint = base_sketch.addConstraint(
+        Sketcher.Constraint('Distance', 0, 120.0))
+    height_constraint = base_sketch.addConstraint(
+        Sketcher.Constraint('Distance', 1, 100.0))
+
+    # Center on origin
+    base_sketch.addConstraint(Sketcher.Constraint('Symmetric', 0, 1, 0, 2, -1, 1))
+    base_sketch.addConstraint(Sketcher.Constraint('Symmetric', 1, 1, 1, 2, -1, 2))
+
+    # Bind to parameters
+    base_sketch.setExpression(f'Constraints[{width_constraint}]', '<<Params>>#VarSet.BaseWidth')
+    base_sketch.setExpression(f'Constraints[{height_constraint}]', '<<Params>>#VarSet.BaseDepth')
+
+# Create pad if not exists
+base_pad = None
+for obj in display_doc.Objects:
+    if obj.TypeId == "PartDesign::Pad" and obj.Label == "Pad":
+        base_pad = obj
+        break
+
+if not base_pad:
+    base_pad = display_doc.addObject("PartDesign::Pad", "Pad")
+    base_pad.Profile = base_sketch
+    base_pad.Length = 25.0
+    base_pad.setExpression('Length', '<<Params>>#VarSet.BaseHeight')
+
+# Add to body
+if base_sketch not in body.Group:
+    body.addObject(base_sketch)
+if base_pad not in body.Group:
+    body.addObject(base_pad)
+
+display_doc.recompute()
+FreeCAD.Console.PrintMessage("Base platform created with parametric constraints\n")
