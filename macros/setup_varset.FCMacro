@@ -1,0 +1,72 @@
+import FreeCAD
+import FreeCADGui
+
+# Check if Params document exists
+params_doc = None
+for doc in FreeCAD.listDocuments().values():
+    if doc.Label == "Params":
+        params_doc = doc
+        break
+
+if not params_doc:
+    params_doc = FreeCAD.newDocument("Params")
+
+# Check if VarSet already exists
+vs = None
+for obj in params_doc.Objects:
+    if obj.TypeId == "App::VarSet" and obj.Label == "VarSet":
+        vs = obj
+        break
+
+if not vs:
+    vs = params_doc.addObject("App::VarSet", "VarSet")
+
+# BaseGeometry parameters
+if "BaseWidth" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyLength", "BaseWidth", "BaseGeometry", "Base platform width")
+    vs.BaseWidth = "120mm"
+
+if "BaseDepth" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyLength", "BaseDepth", "BaseGeometry", "Base platform depth")
+    vs.BaseDepth = "100mm"
+
+if "BaseHeight" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyLength", "BaseHeight", "BaseGeometry", "Base platform height")
+    vs.BaseHeight = "25mm"
+
+if "WallThickness" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyLength", "WallThickness", "BaseGeometry", "Wall thickness throughout")
+    vs.WallThickness = "2.5mm"
+
+# DisplayGeometry parameters
+if "DisplayHeight" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyLength", "DisplayHeight", "DisplayGeometry", "Total display height")
+    vs.DisplayHeight = "200mm"
+
+if "DisplayAngle" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyAngle", "DisplayAngle", "DisplayGeometry", "Display arm angle from vertical")
+    vs.DisplayAngle = "15deg"
+
+if "ArmWidth" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyLength", "ArmWidth", "DisplayGeometry", "Arm width (consistent)")
+    vs.ArmWidth = "20mm"
+
+if "BraceletRestDiameter" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyLength", "BraceletRestDiameter", "DisplayGeometry", "Bracelet rest diameter")
+    vs.BraceletRestDiameter = "25mm"
+
+# Aesthetics parameters
+if "BaseChamfer" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyLength", "BaseChamfer", "Aesthetics", "Base edge chamfer")
+    vs.BaseChamfer = "3mm"
+
+if "ArmChamfer" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyLength", "ArmChamfer", "Aesthetics", "Arm edge chamfer")
+    vs.ArmChamfer = "2mm"
+
+if "RestChamfer" not in vs.PropertiesList:
+    vs.addProperty("App::PropertyLength", "RestChamfer", "Aesthetics", "Rest edge chamfer")
+    vs.RestChamfer = "1.5mm"
+
+params_doc.recompute()
+FreeCAD.Console.PrintMessage("VarSet setup complete with 11 parameters\n")
