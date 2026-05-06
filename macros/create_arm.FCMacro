@@ -1,0 +1,80 @@
+import FreeCAD
+import FreeCADGui
+import Part
+import Sketcher
+import math
+
+# Get display document
+display_doc = FreeCAD.getDocument("BraceletDisplay")
+if not display_doc:
+    FreeCAD.Console.PrintError("BraceletDisplay document not found\n")
+    exit()
+
+# Get body
+body = display_doc.getObject("DisplayBody")
+if not body:
+    FreeCAD.Console.PrintError("DisplayBody not found\n")
+    exit()
+
+# Create arm sketch if not exists
+arm_sketch = display_doc.getObject("ArmSketch")
+if not arm_sketch:
+    arm_sketch = display_doc.addObject("Sketcher::SketchObject", "ArmSketch")
+    arm_sketch.AttachmentSupport = [(display_doc.XZ_Plane, '')]
+    arm_sketch.MapMode = 'FlatFace'
+
+    # Calculate arm endpoint
+    arm_height = 200.0  # DisplayHeight
+    arm_angle_deg = 15.0  # DisplayAngle
+    base_height = 12.5  # Half BaseHeight
+
+    arm_angle_rad = math.radians(arm_angle_deg)
+    end_x = arm_height * math.tan(arm_angle_rad)
+    end_z = arm_height + base_height
+    base_x = 0
+    base_z = base_height
+
+    # Add arm profile - starting from base top
+    arm_sketch.addGeometry(Part.LineSegment(
+        FreeCAD.Vector(base_x, 0, base_z), FreeCAD.Vector(end_x, 0, end_z)), False)
+
+    # Add base connection
+    arm_sketch.addGeometry(Part.LineSegment(
+        FreeCAD.Vector(base_x - 10, 0, base_z), FreeCAD.Vector(base_x + 10, 0, base_z)), False)
+
+    # Connect arm to base
+    arm_sketch.addConstraint(Sketcher.Constraint('Coincident', 0, 1, 1, 2))
+
+    # Height constraint
+    height_constraint = arm_sketch.addConstraint(
+        Sketcher.Constraint('DistanceY', 0, 1, 0, 2, 200.0))
+
+    # Angle constraint
+    angle_constraint = arm_sketch.addConstraint(
+        Sketcher.Constraint('Angle', 1, 0, math.radians(15)))
+
+    # Base width
+    base_width = arm_sketch.addConstraint(
+        Sketcher.Constraint('Distance', 1, 20.0))
+
+    # Bind to parameters
+    arm_sketch.setExpression(f'Constraints[{height_constraint}]', '<<Params>>#VarSet.DisplayHeight')
+    arm_sketch.setExpression(f'Constraints[{angle_constraint}]', '<<Params>>#VarSet.DisplayAngle')
+    arm_sketch.setExpression(f'Constraints[{base_width}]', '<<Params>>#VarSet.ArmWidth')
+
+# Create arm pad if not exists
+arm_pad = display_doc.getObject("ArmPad")
+if not arm_pad:
+    arm_pad = display_doc.addObject("PartDesign::Pad", "ArmPad")
+    arm_pad.Profile = arm_sketch
+    arm_pad.Length = 20.0
+    arm_pad.setExpression('Length', '<<Params>>#VarSet.ArmWidth')
+
+# Add to body
+if arm_sketch not in body.Group:
+    body.addObject(arm_sketch)
+if arm_pad not in body.Group:
+    body.addObject(arm_pad)
+
+display_doc.recompute()
+FreeCAD.Console.PrintMessage("Display arm created with parametric constraints\n")
